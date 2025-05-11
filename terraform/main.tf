@@ -31,22 +31,22 @@ resource "aws_lambda_function" "lambda" {
   source_code_hash = filebase64sha256("function.zip")
 }
 
-data "aws_apigatewayv2_api" "existing_api" {
+data "aws_apigateway_api" "existing_api" {
   api_id = "mj92zct6nc"
 }
 
-resource "aws_apigatewayv2_integration" "lambda_integration" {
-  api_id           = data.aws_apigatewayv2_api.existing_api.id
+resource "aws_apigateway_integration" "lambda_integration" {
+  api_id           = data.aws_apigateway_api.existing_api.id
   integration_type = "AWS_PROXY"
   integration_uri  = aws_lambda_function.lambda.invoke_arn
   integration_method = "POST"
   payload_format_version = "2.0"
 }
 
-resource "aws_apigatewayv2_route" "lambda_route" {
-  api_id    = data.aws_apigatewayv2_api.existing_api.id
+resource "aws_apigateway_route" "lambda_route" {
+  api_id    = data.aws_apigateway_api.existing_api.id
   route_key = "POST /lambda"
-  target    = "integrations/${aws_apigatewayv2_integration.lambda_integration.id}"
+  target    = "integrations/${aws_apigateway_integration.lambda_integration.id}"
 }
 
 resource "aws_lambda_permission" "allow_api_gateway" {
