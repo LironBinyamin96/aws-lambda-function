@@ -49,7 +49,7 @@ resource "aws_api_gateway_resource" "lambda_resource" {
 resource "aws_api_gateway_method" "post_lambda" {
   rest_api_id   = data.aws_api_gateway_rest_api.existing_api.id
   resource_id   = aws_api_gateway_resource.lambda_resource.id
-  http_method   = "POST"
+  http_method   = "ANY"
   authorization = "NONE"
 }
 
