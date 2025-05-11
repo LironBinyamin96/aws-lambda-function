@@ -73,7 +73,7 @@ resource "aws_api_gateway_integration" "lambda_integration" {
 resource "aws_lambda_permission" "api_gateway" {
   statement_id  = "AllowAPIGatewayInvoke"
   action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.liron-lambda-auto-terraform.function_name
+  function_name = aws_lambda_function.lambda_exec_role.function_name
   principal     = "apigateway.amazonaws.com"
   source_arn    = "${data.aws_api_gateway_rest_api.imtech_api.execution_arn}/*/*"
 }
