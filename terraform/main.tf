@@ -32,7 +32,7 @@ resource "aws_lambda_function" "lambda" {
 }
 
 data "aws_api_gateway_rest_api" "existing_api" {
-  id = "mj92zct6nc"
+ name = "imtech"
 }
 
 data "aws_api_gateway_resource" "root" {
