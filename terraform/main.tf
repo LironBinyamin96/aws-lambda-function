@@ -78,7 +78,7 @@ resource "aws_lambda_permission" "allow_api_gateway" {
   source_arn    = "${data.aws_api_gateway_rest_api.existing_api.execution_arn}/*/ANY/liron-lambda-auto-terraform"
 }
 
-# Deployment
+# Deployment (uses existing "default" stage)
 resource "aws_api_gateway_deployment" "lambda_deployment" {
   depends_on = [
     aws_api_gateway_integration.lambda_integration
@@ -94,5 +94,5 @@ resource "aws_api_gateway_deployment" "lambda_deployment" {
     ]))
   }
 
-  stage_name = "default"
+  stage_name = "default" # מפרסם ל-stage הקיים
 }
