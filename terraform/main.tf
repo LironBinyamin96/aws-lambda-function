@@ -69,38 +69,36 @@ resource "aws_api_gateway_integration" "lambda_integration" {
   uri                     = aws_lambda_function.lambda.invoke_arn
 }
 
-# Lambda permission for API Gateway
-resource "aws_lambda_permission" "allow_api_gateway" {
-  statement_id  = "AllowExecutionFromAPIGateway"
+# Grant API Gateway permission to invoke Lambda
+resource "aws_lambda_permission" "api_gateway" {
+  statement_id  = "AllowAPIGatewayInvoke"
   action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.lambda.function_name
+  function_name = aws_lambda_function.oleg_lambda.function_name
   principal     = "apigateway.amazonaws.com"
-  source_arn    = "${data.aws_api_gateway_rest_api.existing_api.execution_arn}/*/ANY/liron-lambda-auto-terraform"
+  source_arn    = "${data.aws_api_gateway_rest_api.imtech_api.execution_arn}/*/*"
 }
-
-# Deployment
-resource "aws_api_gateway_deployment" "lambda_deployment" {
+# Deployment: no stage_name, so Terraform won't manage stages implicitly
+resource "aws_api_gateway_deployment" "deployment" {
   depends_on = [
     aws_api_gateway_integration.lambda_integration
   ]
-
-  rest_api_id = data.aws_api_gateway_rest_api.existing_api.id
-
+  rest_api_id = data.aws_api_gateway_rest_api.imtech_api.id
+  # Force a new deployment whenever the API changes
   triggers = {
     redeployment = sha1(jsonencode([
       aws_api_gateway_resource.lambda_resource.id,
-      aws_api_gateway_method.post_lambda.id,
+      aws_api_gateway_method.any_method.id,
       aws_api_gateway_integration.lambda_integration.id,
     ]))
   }
-
   lifecycle {
     create_before_destroy = true
   }
 }
-
-resource "aws_api_gateway_stage" "lambda_stage" {
+# Adopt and manage the existing "default" stage
+resource "aws_api_gateway_stage" "default_stage" {
+  rest_api_id   = data.aws_api_gateway_rest_api.imtech_api.id
   stage_name    = "default"
-  rest_api_id   = data.aws_api_gateway_rest_api.existing_api.id
-  deployment_id = aws_api_gateway_deployment.lambda_deployment.id
+  deployment_id = aws_api_gateway_deployment.deployment.id
+  description = "Terraform-managed default stage"
 }
