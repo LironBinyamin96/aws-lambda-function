@@ -77,28 +77,22 @@ resource "aws_lambda_permission" "api_gateway" {
   principal     = "apigateway.amazonaws.com"
   source_arn    = "${data.aws_api_gateway_rest_api.imtech_api.execution_arn}/*/*"
 }
-# Deployment: no stage_name, so Terraform won't manage stages implicitly
-resource "aws_api_gateway_deployment" "deployment" {
-  depends_on = [
-    aws_api_gateway_integration.lambda_integration
-  ]
-  rest_api_id = data.aws_api_gateway_rest_api.imtech_api.id
-  # Force a new deployment whenever the API changes
+resource "aws_api_gateway_deployment" "default_deployment" {
+  rest_api_id = data.aws_api_gateway_rest_api.existing_api.id
+
   triggers = {
-    redeployment = sha1(jsonencode([
-      aws_api_gateway_resource.lambda_resource.id,
-      aws_api_gateway_method.any_method.id,
-      aws_api_gateway_integration.lambda_integration.id,
-    ]))
+    redeployment = timestamp()
   }
+
   lifecycle {
     create_before_destroy = true
   }
+
+  depends_on = [aws_api_gateway_integration.lambda_integration]
 }
-# Adopt and manage the existing "default" stage
+
 resource "aws_api_gateway_stage" "default_stage" {
-  rest_api_id   = data.aws_api_gateway_rest_api.imtech_api.id
   stage_name    = "default"
-  deployment_id = aws_api_gateway_deployment.deployment.id
-  description = "Terraform-managed default stage"
+  rest_api_id   = data.aws_api_gateway_rest_api.existing_api.id
+  deployment_id = aws_api_gateway_deployment.default_deployment.id
 }
