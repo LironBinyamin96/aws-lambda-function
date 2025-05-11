@@ -13,6 +13,7 @@ pipeline {
                 sh '''
                     cd terraform
                     terraform init
+                    terraform import aws_api_gateway_stage.default_stage mj92zct6nc/default
                     terraform apply -auto-approve
                 '''
             }
