@@ -37,6 +37,33 @@ resource "aws_lambda_function" "lambda" {
 data "aws_api_gateway_rest_api" "existing_api" {
   name = "imtech"
 }
+# Custom policy to allow Lambda access to DynamoDB table imtech
+resource "aws_iam_policy" "lambda_dynamodb_policy" {
+  name        = "lambda_dynamodb_full_access_imtech"
+  description = "Allow Lambda to access DynamoDB table imtech"
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect   = "Allow",
+        Action   = [
+          "dynamodb:PutItem",
+          "dynamodb:GetItem",
+          "dynamodb:UpdateItem"
+        ],
+        Resource = "arn:aws:dynamodb:il-central-1:314525640319:table/imtech"
+      }
+    ]
+  })
+}
+
+# Attach the custom policy to the Lambda role
+resource "aws_iam_policy_attachment" "attach_lambda_dynamodb_policy" {
+  name       = "lambda_dynamodb_policy_attachment"
+  roles      = [aws_iam_role.lambda_exec_role.name]
+  policy_arn = aws_iam_policy.lambda_dynamodb_policy.arn
+}
 
 # Root Resource
 data "aws_api_gateway_resource" "root" {
@@ -93,6 +120,5 @@ resource "aws_api_gateway_deployment" "lambda_deployment" {
       aws_api_gateway_integration.lambda_integration.id,
     ]))
   }
-
-  stage_name = "default" # מפרסם ל-stage הקיים
+  stage_name = "default" 
 }
