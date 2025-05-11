@@ -4,7 +4,7 @@ pipeline {
     stages {
         stage('Zip Lambda Code') {
             steps {
-                sh 'zip function.zip lambda_function.py'
+                sh 'zip terraform/function.zip lambda_function.py'
             }
         }
 
