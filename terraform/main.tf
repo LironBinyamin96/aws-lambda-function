@@ -43,7 +43,7 @@ data "aws_api_gateway_resource" "root" {
 resource "aws_api_gateway_resource" "lambda_resource" {
   rest_api_id = data.aws_api_gateway_rest_api.existing_api.id
   parent_id   = data.aws_api_gateway_resource.root.id
-  path_part   = "lambda"
+  path_part   = "liron-lambda-auto-terraform"
 }
 
 resource "aws_api_gateway_method" "post_lambda" {
