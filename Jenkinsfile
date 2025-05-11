@@ -2,9 +2,18 @@ pipeline {
     agent any
     environment {
         AWS_REGION = "il-central-1"
-        FUNCTION_NAME = "liron-lambda-jenkins"
+        FUNCTION_NAME = "liron-lambda-new"
     }
-    stages {
+
+        stage('Apply Terraform') {
+            steps {
+                sh '''
+                    cd terraform
+                    terraform init
+                    terraform apply -auto-approve
+                '''
+            }
+        }
 
         stage('Zip Lambda Code') {
             steps {
