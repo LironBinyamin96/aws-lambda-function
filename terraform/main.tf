@@ -69,30 +69,40 @@ resource "aws_api_gateway_integration" "lambda_integration" {
   uri                     = aws_lambda_function.lambda.invoke_arn
 }
 
-# Grant API Gateway permission to invoke Lambda
-resource "aws_lambda_permission" "api_gateway" {
-  statement_id  = "AllowAPIGatewayInvoke"
+# Lambda permission for API Gateway
+resource "aws_lambda_permission" "allow_api_gateway" {
+  statement_id  = "AllowExecutionFromAPIGateway"
   action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.lambda_exec_role.function_name
+  function_name = aws_lambda_function.lambda.function_name
   principal     = "apigateway.amazonaws.com"
-  source_arn    = "${data.aws_api_gateway_rest_api.imtech_api.execution_arn}/*/*"
+  source_arn    = "${data.aws_api_gateway_rest_api.existing_api.execution_arn}/*/ANY/liron-lambda-auto-terraform"
 }
-resource "aws_api_gateway_deployment" "default_deployment" {
+
+# Deployment
+resource "aws_api_gateway_deployment" "lambda_deployment" {
+  depends_on = [
+    aws_api_gateway_integration.lambda_integration
+  ]
+
   rest_api_id = data.aws_api_gateway_rest_api.existing_api.id
 
   triggers = {
-    redeployment = timestamp()
+    redeployment = sha1(jsonencode([
+      aws_api_gateway_resource.lambda_resource.id,
+      aws_api_gateway_method.post_lambda.id,
+      aws_api_gateway_integration.lambda_integration.id,
+    ]))
   }
 
   lifecycle {
     create_before_destroy = true
   }
-
-  depends_on = [aws_api_gateway_integration.lambda_integration]
 }
 
-resource "aws_api_gateway_stage" "default_stage" {
+# Stage
+resource "aws_api_gateway_stage" "lambda_stage" {
+  stage_name    = "prod"
   stage_name    = "default"
   rest_api_id   = data.aws_api_gateway_rest_api.existing_api.id
-  deployment_id = aws_api_gateway_deployment.default_deployment.id
+  deployment_id = aws_api_gateway_deployment.lambda_deployment.id
 }
