@@ -4,7 +4,7 @@ provider "aws" {
 
 # IAM Role for Lambda
 resource "aws_iam_role" "lambda_exec_role" {
-  name = "lambda_liron_role"
+  name = "lambda_liron_role_gitlab"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -39,7 +39,7 @@ data "aws_api_gateway_rest_api" "existing_api" {
 }
 # Custom policy to allow Lambda access to DynamoDB table imtech
 resource "aws_iam_policy" "lambda_dynamodb_policy" {
-  name        = "lambda_dynamodb_full_access_imtech"
+  name        = "lambda_dynamodb_full_access_imtech_gitlab"
   description = "Allow Lambda to access DynamoDB table imtech"
 
   policy = jsonencode({
@@ -60,7 +60,7 @@ resource "aws_iam_policy" "lambda_dynamodb_policy" {
 
 # Attach the custom policy to the Lambda role
 resource "aws_iam_policy_attachment" "attach_lambda_dynamodb_policy" {
-  name       = "lambda_dynamodb_policy_attachment"
+  name       = "lambda_dynamodb_policy_attachment_gitlab"
   roles      = [aws_iam_role.lambda_exec_role.name]
   policy_arn = aws_iam_policy.lambda_dynamodb_policy.arn
 }
