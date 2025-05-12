@@ -25,7 +25,7 @@ resource "aws_iam_role_policy_attachment" "lambda_basic_execution" {
 
 # Lambda Function
 resource "aws_lambda_function" "lambda" {
-  function_name = "liron-lambda-gitlab"
+  function_name = "liron-lambda-gitlab-2"
   role          = aws_iam_role.lambda_exec_role.arn
   handler       = "lambda_function.lambda_handler"
   runtime       = "python3.11"
@@ -75,7 +75,7 @@ data "aws_api_gateway_resource" "root" {
 resource "aws_api_gateway_resource" "lambda_resource" {
   rest_api_id = data.aws_api_gateway_rest_api.existing_api.id
   parent_id   = data.aws_api_gateway_resource.root.id
-  path_part   = "liron-lambda-gitlab"
+  path_part   = "liron-lambda-gitlab-2"
 }
 
 # Method on new resource
